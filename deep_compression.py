@@ -15,34 +15,64 @@ net = VGG16_half()
 net = net.to(device)
 
 # Load the best weight paramters
-net.load_state_dict(torch.load("net_before_pruning.pt"))
+net.load_state_dict(torch.load("net_after_pruning.pt"))
 test(net)
-
+#
 print("-----Summary before pruning-----")
 summary(net)
 print("-------------------------------")
 
-### Pruning & Finetune with pruned connections
-# Test accuracy before fine-tuning
+centers = quantize_whole_model(net, bits=5)
+
+frequency_map, encoding_map = huffman_coding(net, centers)
+np.save("huffman_encoding", encoding_map)
+np.save("huffman_freq", frequency_map)
+
+#
+# ### Pruning & Finetune with pruned connections
+# # Test accuracy before fine-tuning
+#
+# prune(net, method='std', q=0.45, s=0.75)
+#
+# print("-----Summary after pruning-----")
+# summary(net)
+# print("-------------------------------")
+#
+# finetune_after_prune(net, lr=0.05, reg=5e-5)
+
+# f = open("result_quant_precise.csv", "w")
+# f.write("bit, acc\n")
+# bits = np.arange(1, 17)
+# acc = np.zeros((1, 16)).flatten()
+# for bit in bits:
+#     model = copy.deepcopy(net)
+#     centers = quantize_whole_model(model, bits=bit)
+#     #np.save("codebook_vgg16.npy", centers)
+#     acc[bit-1] = test(model)
+#     f.write("%d, %f\n"%(bit, acc[bit-1]))
 
 
 
-sensitive = np.linspace(0, 3, 30).flatten()
-percentage = np.linspace(0, 95, 30).flatten()
-sparsity = np.zeros((1, 30)).flatten()
-acc = np.zeros((1, 30)).flatten()
+#torch.save(net.state_dict(), "net_after_quantization.pt")
 
-f = open("result_per.csv", "w")
-f.write("s, sparsity, acc\n")
 
-for i in range(30):
-    model = copy.deepcopy(net)
-    prune(model, method='percentage', q=percentage[i], s=0.45)
-    acc[i] = test(model)
 
-    print("-----Summary after pruning-----")
-    sparsity[i] = summary(model)
-    print("-------------------------------")
-    f.write("%f, %f, %f\n"%(percentage[i], sparsity[i], acc[i]))
+# sensitive = np.linspace(0, 3, 30).flatten()
+# percentage = np.linspace(0, 95, 30).flatten()
+# sparsity = np.zeros((1, 30)).flatten()
+# acc = np.zeros((1, 30)).flatten()
+#
+# f = open("result_per.csv", "w")
+# f.write("s, sparsity, acc\n")
+#
+# for i in range(30):
+#     model = copy.deepcopy(net)
+#     prune(model, method='percentage', q=percentage[i], s=0.45)
+#     acc[i] = test(model)
+#
+#     print("-----Summary after pruning-----")
+#     sparsity[i] = summary(model)
+#     print("-------------------------------")
+#     f.write("%f, %f, %f\n"%(percentage[i], sparsity[i], acc[i]))
 
 

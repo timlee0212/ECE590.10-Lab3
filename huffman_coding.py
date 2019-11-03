@@ -2,6 +2,7 @@ import numpy as np
 from sklearn.cluster import KMeans
 from pruned_layers import *
 import torch.nn as nn
+import heapq
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -26,6 +27,15 @@ def _huffman_coding_per_layer(weight, centers):
     Generate Huffman Coding and Frequency Map according to incoming weights and centers (KMeans centriods).
     --------------Your Code---------------------
     """
+    unique, count = np.unique(weight.cpu().detach().numpy().flatten())
+    frequency = zip(str(unique), count)
+    h_freq = frequency
+    heapq.heapify(h_freq)
+    while len(h_freq)>1:
+        freq_l, l_node = heapq.heappop(h_freq)
+        freq_r, r_node = heapq.heappop(h_freq)
+        heapq.heappush(freq_l+freq_r, [l_node, r_node])
+
     return encodings, frequency
 
 

@@ -43,14 +43,10 @@ class PruneLinear(nn.Module):
         threshold_pos = int(np.ceil(0.01 * q * len(sorted_weight)))
         threshold = sorted_weight[threshold_pos]
 
-        self.sparsity = q * 0.01
-        self.mask = (np.abs(weights) <= threshold)
+        self.sparsity = threshold_pos / len(sorted_weight)
+        self.mask = torch.tensor((np.abs(weights) <= threshold), dtype=torch.bool)
 
-        weights[self.mask] = 0
-        ori = self.linear.state_dict()
-        ori['weight'] = torch.tensor(weights)
-
-        self.linear.load_state_dict(ori)
+        self.linear.weight.data[self.mask] = 0
         pass
 
 
@@ -70,19 +66,13 @@ class PruneLinear(nn.Module):
         --------------Your Code---------------------
         """
         weights = self.linear.weight.data.cpu().detach().numpy()
-        sorted_weight = np.sort(np.abs(weights.flatten()))
-
         threshold = np.std(weights.flatten()) * s
 
-        self.mask = (np.abs(weights) <= threshold)
-        self.sparsity = np.sum(self.mask) / np.sum(self.mask.shape)
+        self.mask = torch.tensor((np.abs(weights) <= threshold), dtype=torch.bool)
+        self.sparsity = torch.sum(self.mask) / np.sum(list(self.mask.shape))
 
-        weights[self.mask] = 0
-        ori = self.linear.state_dict()
-        ori['weight'] = torch.tensor(weights)
+        self.linear.weight.data[self.mask] = 0
 
-        self.linear.load_state_dict(ori)
-        pass
 
 class PrunedConv(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, bias=False):
@@ -128,13 +118,9 @@ class PrunedConv(nn.Module):
         threshold = sorted_weight[threshold_pos]
 
         self.sparsity = q * 0.01
-        self.mask = (np.abs(weights) <= threshold)
+        self.mask = torch.tensor((np.abs(weights) <= threshold), dtype=torch.bool)
 
-        weights[self.mask] = 0
-        ori = self.conv.state_dict()
-        ori['weight'] = torch.tensor(weights)
-
-        self.conv.load_state_dict(ori)
+        self.conv.weight.data[self.mask] = 0
 
     def prune_by_std(self, s=0.25):
         """
@@ -155,14 +141,10 @@ class PrunedConv(nn.Module):
 
         threshold = np.std(weights.flatten()) * s
 
-        self.mask = (np.abs(weights) <= threshold)
-        self.sparsity = np.sum(self.mask) / np.sum(self.mask.shape)
+        self.mask = torch.tensor((np.abs(weights) <= threshold), dtype=torch.bool)
+        self.sparsity = torch.sum(self.mask) / np.sum(list(self.mask.shape))
 
-        weights[self.mask] = 0
-        ori = self.conv.state_dict()
-        ori['weight'] = torch.tensor(weights)
-
-        self.conv.load_state_dict(ori)
+        self.conv.weight.data[self.mask] = 0
 
         pass
 

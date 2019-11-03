@@ -160,6 +160,11 @@ def finetune_after_prune(net, epochs=100, batch_size=128, lr=0.01, reg=5e-4):
             Zero the gradients of the pruned variables.
             -----------------------Your Code-------------------------
             """
+            for m in net.modules():
+                if isinstance(m, PruneLinear):
+                    m.linear.weight.grad[m.mask] = 0
+                elif isinstance(m, PrunedConv):
+                    m.conv.weight.grad[m.mask] = 0
 
             optimizer.step()
             train_loss += loss.item()
