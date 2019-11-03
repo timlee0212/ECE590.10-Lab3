@@ -232,5 +232,7 @@ def test(net):
     val_acc = correct / total
     print("Test Loss=%.4f, Test accuracy=%.4f" % (test_loss / (num_val_steps), val_acc))
 
+    return val_acc
+
 
 
