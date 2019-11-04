@@ -27,14 +27,30 @@ def _huffman_coding_per_layer(weight, centers):
     Generate Huffman Coding and Frequency Map according to incoming weights and centers (KMeans centriods).
     --------------Your Code---------------------
     """
-    unique, count = np.unique(weight.cpu().detach().numpy().flatten())
-    frequency = zip(str(unique), count)
-    h_freq = frequency
+    #Eliminate Prunned Weight
+    weight = weight.flatten()
+    weight = weight[weight != 0]
+
+    unique, count = np.unique(weight, return_counts=True)
+    freq = count / np.sum(weight.shape)
+
+    frequency = dict(zip(["%f"%uni for uni in unique], freq))
+
+    #example: [$frequency, [$codebook, $encoded]]
+    h_freq = [[freq, [symbol, ""]] for symbol, freq in frequency.items()]
     heapq.heapify(h_freq)
     while len(h_freq)>1:
-        freq_l, l_node = heapq.heappop(h_freq)
-        freq_r, r_node = heapq.heappop(h_freq)
-        heapq.heappush(freq_l+freq_r, [l_node, r_node])
+        l_node = heapq.heappop(h_freq)
+        r_node = heapq.heappop(h_freq)
+        for node in l_node[1:]:
+            node[1] += '0'      #Left node of the encoding tree
+        for node in r_node[1:]:
+            node[1] += '1'      #Right Node of the encoding tree
+        merged_node = [l_node[0] + r_node[0]] + l_node[1:] + r_node[1:]
+        heapq.heappush(h_freq, merged_node)
+
+    encodings = np.array(heapq.heappop(h_freq)[1:])
+    encodings = dict(zip(encodings[:, 0], encodings[:, 1]))
 
     return encodings, frequency
 

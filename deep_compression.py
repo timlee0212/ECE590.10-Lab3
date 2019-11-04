@@ -22,11 +22,12 @@ print("-----Summary before pruning-----")
 summary(net)
 print("-------------------------------")
 
-centers = quantize_whole_model(net, bits=5)
-
-frequency_map, encoding_map = huffman_coding(net, centers)
-np.save("huffman_encoding", encoding_map)
-np.save("huffman_freq", frequency_map)
+# centers = quantize_whole_model(net, bits=5)
+# test(net)
+#
+# frequency_map, encoding_map = huffman_coding(net, centers)
+# np.save("huffman_encoding", encoding_map)
+# np.save("huffman_freq", frequency_map)
 
 #
 # ### Pruning & Finetune with pruned connections
@@ -40,16 +41,16 @@ np.save("huffman_freq", frequency_map)
 #
 # finetune_after_prune(net, lr=0.05, reg=5e-5)
 
-# f = open("result_quant_precise.csv", "w")
-# f.write("bit, acc\n")
-# bits = np.arange(1, 17)
-# acc = np.zeros((1, 16)).flatten()
-# for bit in bits:
-#     model = copy.deepcopy(net)
-#     centers = quantize_whole_model(model, bits=bit)
-#     #np.save("codebook_vgg16.npy", centers)
-#     acc[bit-1] = test(model)
-#     f.write("%d, %f\n"%(bit, acc[bit-1]))
+f = open("result_quant_precise.csv", "w")
+f.write("bit, acc\n")
+bits = [1, 2, 3, 4, 5, 6, 7, 8, 10, 12]
+acc = np.zeros((1, 16)).flatten()
+for bit in bits:
+    model = copy.deepcopy(net)
+    centers = quantize_whole_model(model, bits=bit)
+    #np.save("codebook_vgg16.npy", centers)
+    acc[bit-1] = test(model)
+    f.write("%d, %f\n"%(bit, acc[bit-1]))
 
 
 

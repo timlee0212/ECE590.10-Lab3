@@ -1,5 +1,5 @@
 import numpy as np
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans, MiniBatchKMeans
 from pruned_layers import *
 import torch.nn as nn
 import heapq
@@ -72,7 +72,7 @@ def quantize_whole_model(net, bits=8):
                 #TODO: Implement Different Initialization Functions
                 cur_centeroids = np.linspace(_min, _max, num=2**bits).reshape(-1, 1)
 
-                kmeans = KMeans(n_clusters=len(cur_centeroids), init=cur_centeroids, algorithm='full')
+                kmeans = MiniBatchKMeans(n_clusters=len(cur_centeroids), init=cur_centeroids)
                 kmeans.fit(weight)
 
                 new_weight = np.zeros_like(ori_weight)
