@@ -15,7 +15,7 @@ net = VGG16_half()
 net = net.to(device)
 
 # Load the best weight paramters
-net.load_state_dict(torch.load("net_after_pruning.pt"))
+net.load_state_dict(torch.load("net_after_pruning0.91_0.96.pt"))
 test(net)
 #
 print("-----Summary before pruning-----")
@@ -41,16 +41,16 @@ print("-------------------------------")
 #
 # finetune_after_prune(net, lr=0.05, reg=5e-5)
 
-f = open("result_quant_precise.csv", "w")
-f.write("bit, acc\n")
-bits = [1, 2, 3, 4, 5, 6, 7, 8, 10, 12]
-acc = np.zeros((1, 16)).flatten()
-for bit in bits:
-    model = copy.deepcopy(net)
-    centers = quantize_whole_model(model, bits=bit)
-    #np.save("codebook_vgg16.npy", centers)
-    acc[bit-1] = test(model)
-    f.write("%d, %f\n"%(bit, acc[bit-1]))
+# f = open("result_quant_precise.csv", "w")
+# f.write("bit, acc\n")
+# bits = [1, 2, 3, 4, 5, 6, 7, 8, 10, 12]
+# acc = np.zeros((1, 16)).flatten()
+# for bit in bits:
+#     model = copy.deepcopy(net)
+#     centers = quantize_whole_model(model, bits=bit)
+#     #np.save("codebook_vgg16.npy", centers)
+#     acc[bit-1] = test(model)
+#     f.write("%d, %f\n"%(bit, acc[bit-1]))
 
 
 
